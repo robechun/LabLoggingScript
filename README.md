@@ -1,3 +1,5 @@
+# Lab Logging Script
+
 Script to log hours within the SPU Banner System.
 
 Written in Python and using Mechanize.
@@ -6,11 +8,8 @@ Written in Python and using Mechanize.
 
 --
 
-<b><i>TODO
+## TODO
 
-Be able to support other users
-
-
-
-cookies?
-
+- [x] Be able to support other users 
+- [ ] Handle customizable times for logging
+- [ ] Cookies(?)
