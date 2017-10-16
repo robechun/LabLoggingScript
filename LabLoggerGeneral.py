@@ -1,8 +1,9 @@
 import mechanize
 import time
+from bs4 import BeautifulSoup
 
-spu_username = <YOUR_USERNAME_HERE>
-spu_password = <YOUR_PASSWORD_HERE>
+spu_username = "<YOUR_USERNAME_HERE>"
+spu_password = "<YOUR_PASSWORD_HERE>"
 
 
 # Browser
@@ -12,17 +13,18 @@ br = mechanize.Browser()
 def main():
 
     # Browser options
-    br.set_handle_equiv( True ) 
-    br.set_handle_gzip( True ) 
-    br.set_handle_redirect( True ) 
-    br.set_handle_referer( True ) 
-    br.set_handle_robots( False ) 
-    br.addheaders = [('User-agent', 'Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.1) Gecko/2008071615 Fedora/3.0.1-1.fc9 Firefox/3.0.1')]
+    br.set_handle_equiv(True)
+    br.set_handle_gzip(True)
+    br.set_handle_redirect(True)
+    br.set_handle_referer(True)
+    br.set_handle_robots(False)
+    br.addheaders = [('User-agent', 'Mozilla/5.0 (X11; U; Linux i686; en-US; '
+                      'rv:1.9.0.1) Gecko/2008071615 Fedora/3.0.1-1.fc9 '
+                      'Firefox/3.0.1')]
 
-    # login/auth
-    response = br.open("https://banweb.spu.edu/pls/prod/twbkwbis.P_WWWLogin")    
+    br.open("https://banweb.spu.edu/pls/prod/twbkwbis.P_WWWLogin")
 
-    handleFirstWindow(br)
+    handleFirstWindow()
     handleLoginToSPU()
     handleTimesheetSelection()
     handleUpdateTimesheet()
@@ -30,24 +32,31 @@ def main():
     print("Good shit\n")
 
 
-
-
 # Get today's url, but might need to figure out the LastDate= part
 # and maybe it will change throughout the weeks
 def getTodaysURL():
+    # Grab today's date to figure out which section to insert
     month = time.strftime("%b").upper()
     day = time.strftime("%d")
     year = time.strftime("%Y")
-    # MAKE SURE YOU CHANGE THIS URL TO YOUR OWN PERSONAL. COPY DOWN THE URL WHERE YOU ENTER YOUR HOURS.
-    # MAKE SURE YOU PUT IN THE %s FOR MONTH, DATE, YEAR LIKE SO
-    # return "YOUR_URL...&DateSelected=%s-%s-%s&LineNumber=5" % (day, month, year)
+
+    # Grab the url to redirect to
+    response = br.response()
+    soup = BeautifulSoup(response.read(), "html.parser")
+    table = soup.find_all("td", class_="dbdefault")
+    url = table[5].find('a').get('href')
+    url = "https://banweb.spu.edu" + url[:url.index("DateSelected=")] + \
+          "DateSelected=%s-%s-%s" % (day, month, year) + "&LineNumber=5"
+
+    return url
 
 
 # Handle First form window with single sign-on prompt
 def handleFirstWindow():
     br.select_form(nr=0)
-    br.set_all_readonly( False )
+    br.set_all_readonly(False)
     br.submit()
+
 
 # Handle logging into actual SPU system
 def handleLoginToSPU():
@@ -56,13 +65,17 @@ def handleLoginToSPU():
     br["password"] = spu_password
     br.submit()
     
-# Choose timesheet so that we can go ahead and update/get access to html form that allows update.
+
+# Choose timesheet so that we can go ahead and update/get access to html form
+# that allows update.
 def handleTimesheetSelection():
-    req = mechanize.Request("https://banweb.spu.edu/pls/prod/bwpktais.P_SelectTimeSheetRoll")
+    req = mechanize.Request("https://banweb.spu.edu/pls/prod/bwpktais"
+                            ".P_SelectTimeSheetRoll")
     br.open(req)
     br.select_form(nr=1)
-    br.set_all_readonly( False )
+    br.set_all_readonly(False)
     br.submit(type="submit")
+
 
 # Update your timesheet with times of when one worked.
 def handleUpdateTimesheet():
@@ -71,7 +84,7 @@ def handleUpdateTimesheet():
     timesheet = mechanize.Request(todaysURL)
     br.open(timesheet)
     br.select_form(nr=1)
-    br.set_all_readonly ( False )
+    br.set_all_readonly(False)
     
     # Update timesheet
     timeIN = br.find_control(name="TimeIn", nr=0)
@@ -85,6 +98,7 @@ def handleUpdateTimesheet():
     timeOUT_AMPM.value = ["PM"]
 
     br.submit(name="ButtonSelected", label="Save")
+
 
 if __name__ == "__main__":
     main()
