@@ -14,7 +14,6 @@ def main():
 
     # Browser options
     br.set_handle_equiv(True)
-    br.set_handle_gzip(True)
     br.set_handle_redirect(True)
     br.set_handle_referer(True)
     br.set_handle_robots(False)
@@ -29,7 +28,7 @@ def main():
     handleTimesheetSelection()
     handleUpdateTimesheet()
 
-    print("Good shit\n")
+    print("Good shift m8\n")
 
 
 # Get today's url, but might need to figure out the LastDate= part
@@ -88,17 +87,36 @@ def handleUpdateTimesheet():
     
     # Update timesheet
     timeIN = br.find_control(name="TimeIn", nr=0)
-    timeIN.value = "6:00"
     timeOUT = br.find_control(name="TS_TimeOut", nr=0)
-    timeOUT.value = "9:30"
-
     timeIN_AMPM = br.find_control(name="TimeInAm", nr=0)
-    timeIN_AMPM.value = ["PM"]
     timeOUT_AMPM = br.find_control(name="TimeOutAm", nr=0)
-    timeOUT_AMPM.value = ["PM"]
+    
+    # Change this based on your own shift!
+    day = time.strftime("%a")
+
+    if day == "Mon":
+        timeIN.value = "6:00"
+        timeOUT.value = "9:30"
+        timeIN_AMPM.value = ["PM"]
+        timeOUT_AMPM.value = ["PM"]
+    elif day == "Tue":
+        timeIN.value = "6:00"
+        timeOUT.value = "9:30"
+        timeIN_AMPM.value = ["PM"]
+        timeOUT_AMPM.value = ["PM"]
+    elif day == "Wed":
+        timeIN.value = "6:00"
+        timeOUT.value = "9:30"
+        timeIN_AMPM.value = ["PM"]
+        timeOUT_AMPM.value = ["PM"]
+    else:
+        pass
 
     br.submit(name="ButtonSelected", label="Save")
 
 
 if __name__ == "__main__":
+    print "---------------------------------------------"
+    print "|          Logging your hours               |"
+    print "---------------------------------------------"
     main()
