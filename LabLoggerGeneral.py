@@ -2,13 +2,19 @@ import mechanize
 import time
 from bs4 import BeautifulSoup
 
+# ------------------------ !!CHANGE HERE!! ------------------------- #
 spu_username = "<YOUR_USERNAME_HERE>"
 spu_password = "<YOUR_PASSWORD_HERE>"
+# ------------------------------------------------------------------ #
 
 
 # Browser
 br = mechanize.Browser()
 
+# -------------------------------------- !!CHANGE HERE!! ------------------------------------------ #
+# # Days you are going to be working -- put into form "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"
+workingDays = ("Mon", "Tue", "Wed")
+# ------------------------------------------------------------------------------------------------- #
 
 def main():
 
@@ -23,6 +29,9 @@ def main():
 
     br.open("https://banweb.spu.edu/pls/prod/twbkwbis.P_WWWLogin")
 
+    if checkWorkingDay() is False:
+        print "Today is not a day in your shift!"
+        return
     handleFirstWindow()
     handleLoginToSPU()
     handleTimesheetSelection()
@@ -78,6 +87,11 @@ def handleTimesheetSelection():
 
 # Update your timesheet with times of when one worked.
 def handleUpdateTimesheet():
+
+    # Grab previous hours before logging
+    hours = getHours()
+    print "PREV HOURS: ", hours
+
     # Find Today's time sheet
     todaysURL = getTodaysURL()
     timesheet = mechanize.Request(todaysURL)
@@ -94,6 +108,9 @@ def handleUpdateTimesheet():
     # Change this based on your own shift!
     day = time.strftime("%a")
 
+    # ------------------------ !!CHANGE HERE!! ------------------------- #
+    # Thu, Fri, Sat, Sun are available
+    # Simply change the values depending on when your regular shifts are
     if day == "Mon":
         timeIN.value = "6:00"
         timeOUT.value = "9:30"
@@ -110,9 +127,32 @@ def handleUpdateTimesheet():
         timeIN_AMPM.value = ["PM"]
         timeOUT_AMPM.value = ["PM"]
     else:
-        pass
+        print "ERROR: Check your working days or script for typos"
+        return
+    # ------------------------------------------------------------------ #
 
-    br.submit(name="ButtonSelected", label="Save")
+    br.submit()
+
+    hours = getHours()
+    print "AFTER TODAY: ", hours
+
+
+# Tbh not the best way to do this but it should work for this application
+def getHours():
+    # Report to user current total hours
+    response = br.response()
+    soup = BeautifulSoup(response.read(), "html.parser")
+    table = soup.find_all("td", class_="dbdefault")
+    hours = table[3].find('p').getText()
+    return hours
+
+
+def checkWorkingDay():
+    day = time.strftime("%d")
+    if day in workingDays:
+        return True
+    
+    return False
 
 
 if __name__ == "__main__":
