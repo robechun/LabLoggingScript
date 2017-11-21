@@ -148,7 +148,7 @@ def getHours():
 
 
 def checkWorkingDay():
-    day = time.strftime("%d")
+    day = time.strftime("%a")
     if day in workingDays:
         return True
     
